@@ -7,10 +7,12 @@ import productRouter from './routers/productRouter.js';
 dotenv.config();
 
 const app = express();
+
+// Enable CORS for all origins
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// MongoDB connection with error handling
+// MongoDB connection
 mongoose.connect(process.env.MONGODB_URL || 'mongodb://127.0.0.1:27017/amazona')
   .then(() => {
     console.log('Connected to MongoDB');
@@ -19,15 +21,17 @@ mongoose.connect(process.env.MONGODB_URL || 'mongodb://127.0.0.1:27017/amazona')
     console.error('MongoDB connection error:', err);
   });
 
-
-// Middleware for routing
+// Use routers
 app.use('/api/users', userRouter);
 app.use('/api/products', productRouter);
-
-// Basic route to check if the server is running
 app.get('/', (req, res) => {
   res.send('Server is ready');
 });
+
+app.use((err, req, res, next) => {
+  res.status(500).send({ message: err.message });
+});
+
 
 // Server listening on the specified port
 const port = process.env.PORT || 5000;
